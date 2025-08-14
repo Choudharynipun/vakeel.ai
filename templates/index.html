@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vakeel.ai - Next-Generation Legal AI Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <meta name="description" content="Advanced Legal AI Platform powered by local processing and RAG technology">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="particle" style="--delay: 0s; --duration: 15s;"></div>
+        <div class="particle" style="--delay: -2s; --duration: 18s;"></div>
+        <div class="particle" style="--delay: -4s; --duration: 12s;"></div>
+        <div class="particle" style="--delay: -6s; --duration: 20s;"></div>
+        <div class="particle" style="--delay: -8s; --duration: 16s;"></div>
+        <div class="particle" style="--delay: -10s; --duration: 14s;"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <div class="logo-wrapper">
+                    <div class="logo-icon">
+                        <i class="fas fa-balance-scale"></i>
+                        <div class="logo-glow"></div>
+                    </div>
+                    <div class="logo-text">
+                        <span class="brand-name">Vakeel.ai</span>
+                        <span class="brand-tagline">Legal AI Platform</span>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="#home" class="nav-link active">Home</a>
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#how-it-works" class="nav-link">How It Works</a>
+                <a href="#chat" class="nav-link">Try Now</a>
+                <button class="clear-session-btn" id="clearSessionBtn">
+                    <i class="fas fa-trash-alt"></i>
+                    <span>Clear Session</span>
+                </button>
+            </div>
+            <div class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-bg">
+            <div class="grid-overlay"></div>
+            <div class="floating-elements">
+                <div class="floating-element" style="--delay: 0s;"></div>
+                <div class="floating-element" style="--delay: -3s;"></div>
+                <div class="floating-element" style="--delay: -6s;"></div>
+            </div>
+        </div>
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1 class="hero-title">
+                    <span class="title-line">Next-Generation</span>
+                    <span class="title-line gradient-text">Legal AI Platform</span>
+                </h1>
+                <p class="hero-subtitle typewriter">
+                    Revolutionizing legal document analysis with advanced AI, local processing, and RAG technology. 
+                    Your documents stay private while you get intelligent insights.
+                </p>
+                <div class="hero-buttons">
+                    <button class="cta-primary" onclick="scrollToSection('chat')">
+                        <i class="fas fa-rocket"></i>
+                        <span>Start Analyzing</span>
+                        <div class="button-glow"></div>
+                    </button>
+                    <button class="cta-secondary" onclick="scrollToSection('features')">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Learn More</span>
+                    </button>
+                </div>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" data-target="100">0</div>
+                        <div class="stat-label">% Private</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number" data-target="7">0</div>
+                        <div class="stat-label">B Parameters</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="system-status" id="systemStatus">
+            <div class="status-indicator">
+                <div class="status-pulse"></div>
+                <span class="status-text">System Status: <span id="statusText">Checking...</span></span>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <div class="scroll-arrow"></div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="title-highlight">Advanced</span> Features
+                </h2>
+                <p class="section-subtitle">
+                    Cutting-edge AI technology meets legal expertise for unparalleled document analysis
+                </p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-header">
+                        <div class="feature-icon">
+                            <i class="fas fa-user-shield"></i>
+                            <div class="icon-glow"></div>
+                        </div>
+                        <h3>100% Local Processing</h3>
+                    </div>
+                    <p>All document analysis happens locally using advanced LLaMA2 model. Your sensitive legal documents never leave your machine, ensuring complete privacy and security.</p>
+                    <div class="feature-tech">
+                        <span class="tech-tag">LLaMA2-7B</span>
+                        <span class="tech-tag">Local AI</span>
+                        <span class="tech-tag">Zero Cloud</span>
+                    </div>
+                </div>
+
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feature-header">
+                        <div class="feature-icon">
+                            <i class="fas fa-file-alt"></i>
+                            <div class="icon-glow"></div>
+                        </div>
+                        <h3>Multi-Format Support</h3>
+                    </div>
+                    <p>Process PDF documents and images (JPG, PNG, TIFF, BMP) with advanced OCR capabilities. Handles both digital and scanned legal documents seamlessly.</p>
+                    <div class="feature-tech">
+                        <span class="tech-tag">OCR Engine</span>
+                        <span class="tech-tag">50MB Limit</span>
+                        <span class="tech-tag">Multi-Format</span>
+                    </div>
+                </div>
+
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="feature-header">
+                        <div class="feature-icon">
+                            <i class="fas fa-database"></i>
+                            <div class="icon-glow"></div>
+                        </div>
+                        <h3>RAG Pipeline</h3>
+                    </div>
+                    <p>Retrieval-Augmented Generation with ChromaDB vector database and BGE-M3 reranker for accurate, contextual responses based on legal document content.</p>
+                    <div class="feature-tech">
+                        <span class="tech-tag">ChromaDB</span>
+                        <span class="tech-tag">BGE-M3</span>
+                        <span class="tech-tag">Vector Search</span>
+                    </div>
+                </div>
+
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="400">
+                    <div class="feature-header">
+                        <div class="feature-icon">
+                            <i class="fas fa-gavel"></i>
+                            <div class="icon-glow"></div>
+                        </div>
+                        <h3>Legal Knowledge Base</h3>
+                    </div>
+                    <p>Pre-loaded with Indian Constitution, IPC, CrPC, and other legal datasets. Answer general legal questions beyond uploaded document content.</p>
+                    <div class="feature-tech">
+                        <span class="tech-tag">Indian Law</span>
+                        <span class="tech-tag">IPC/CrPC</span>
+                        <span class="tech-tag">Constitution</span>
+                    </div>
+                </div>
+
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="500">
+                    <div class="feature-header">
+                        <div class="feature-icon">
+                            <i class="fas fa-search"></i>
+                            <div class="icon-glow"></div>
+                        </div>
+                        <h3>Semantic Search</h3>
+                    </div>
+                    <p>Advanced vector similarity search with semantic understanding. Find relevant legal precedents and clauses based on meaning, not just keywords.</p>
+                    <div class="feature-tech">
+                        <span class="tech-tag">Vector DB</span>
+                        <span class="tech-tag">Semantic AI</span>
+                        <span class="tech-tag">Context Aware</span>
+                    </div>
+                </div>
+
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="600">
+                    <div class="feature-header">
+                        <div class="feature-icon">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <div class="icon-glow"></div>
+                        </div>
+                        <h3>Fast Response Time</h3>
+                    </div>
+                    <p>Optimized LLaMA2-7B model for quick responses while maintaining accuracy. Real-time processing with confidence scoring and source citations.</p>
+                    <div class="feature-tech">
+                        <span class="tech-tag">Sub-2s Response</span>
+                        <span class="tech-tag">Confidence Score</span>
+                        <span class="tech-tag">Citations</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">How Vakeel.ai Works</h2>
+                <p class="section-subtitle">Simple steps to unlock powerful legal AI insights</p>
+            </div>
+            <div class="steps-container">
+                <div class="step" data-aos="fade-right" data-aos-delay="100">
+                    <div class="step-number">
+                        <span>01</span>
+                        <div class="number-glow"></div>
+                    </div>
+                    <div class="step-content">
+                        <h3>Upload Your Document</h3>
+                        <p>Simply drag and drop or browse to upload your legal documents (PDF, JPG, PNG, TIFF, BMP). Maximum file size is 50MB with OCR processing for scanned documents.</p>
+                        <div class="step-features">
+                            <span><i class="fas fa-check"></i> Drag & Drop Interface</span>
+                            <span><i class="fas fa-check"></i> OCR Processing</span>
+                            <span><i class="fas fa-check"></i> 50MB Limit</span>
+                        </div>
+                    </div>
+                    <div class="step-visual">
+                        <div class="upload-animation">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step step-reverse" data-aos="fade-left" data-aos-delay="200">
+                    <div class="step-visual">
+                        <div class="chat-animation">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                    </div>
+                    <div class="step-content">
+                        <h3>Ask Your Questions</h3>
+                        <p>Type your legal questions about the document or general legal queries. Our AI analyzes using RAG pipeline and comprehensive legal knowledge base.</p>
+                        <div class="step-features">
+                            <span><i class="fas fa-check"></i> Natural Language</span>
+                            <span><i class="fas fa-check"></i> Context Aware</span>
+                            <span><i class="fas fa-check"></i> Legal Expertise</span>
+                        </div>
+                    </div>
+                    <div class="step-number">
+                        <span>02</span>
+                        <div class="number-glow"></div>
+                    </div>
+                </div>
+
+                <div class="step" data-aos="fade-right" data-aos-delay="300">
+                    <div class="step-number">
+                        <span>03</span>
+                        <div class="number-glow"></div>
+                    </div>
+                    <div class="step-content">
+                        <h3>Get AI-Powered Analysis</h3>
+                        <p>Receive detailed, accurate responses with source citations, confidence scores, and processing times. All analysis happens locally for complete privacy.</p>
+                        <div class="step-features">
+                            <span><i class="fas fa-check"></i> Source Citations</span>
+                            <span><i class="fas fa-check"></i> Confidence Scores</span>
+                            <span><i class="fas fa-check"></i> Local Processing</span>
+                        </div>
+                    </div>
+                    <div class="step-visual">
+                        <div class="analysis-animation">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chat Interface Section -->
+    <section id="chat" class="chat-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Try Vakeel.ai Now</h2>
+                <p class="section-subtitle">Experience the power of AI-driven legal document analysis</p>
+            </div>
+            <div class="chat-interface">
+                <div class="upload-zone">
+                    <div class="upload-header">
+                        <h3><i class="fas fa-upload"></i> Document Upload</h3>
+                        <div class="upload-status" id="uploadStatus">
+                            <div class="status-dot" id="uploadStatusDot"></div>
+                            <span id="uploadStatusText">Ready</span>
+                        </div>
+                    </div>
+                    <div class="file-drop-zone" id="fileDropZone">
+                        <div class="drop-zone-content">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <h4>Drag & Drop Your Legal Documents</h4>
+                            <p>or <button class="browse-btn" id="browseBtn">browse your files</button></p>
+                            <div class="supported-formats">
+                                <span>PDF</span>
+                                <span>JPG</span>
+                                <span>PNG</span>
+                                <span>TIFF</span>
+                                <span>BMP</span>
+                            </div>
+                            <p class="file-limit">Maximum file size: 50MB</p>
+                        </div>
+                        <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.tiff,.bmp" style="display: none;">
+                    </div>
+                    <div class="upload-progress" id="uploadProgress" style="display: none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-info">
+                            <span id="progressText">Uploading...</span>
+                            <span id="progressPercent">0%</span>
+                        </div>
+                    </div>
+                    <div class="uploaded-documents" id="uploadedDocuments">
+                        <h4><i class="fas fa-file-alt"></i> Uploaded Documents</h4>
+                        <div class="documents-list" id="documentsList"></div>
+                    </div>
+                </div>
+
+                <div class="chat-container">
+                    <div class="chat-header">
+                        <div class="chat-title">
+                            <div class="ai-avatar">
+                                <i class="fas fa-robot"></i>
+                                <div class="avatar-pulse"></div>
+                            </div>
+                            <div class="title-info">
+                                <h3>Legal AI Assistant</h3>
+                                <p>Powered by LLaMA2 & RAG Technology</p>
+                            </div>
+                        </div>
+                        <div class="chat-status">
+                            <div class="status-indicator" id="chatStatusIndicator">
+                                <div class="status-dot ready" id="chatStatusDot"></div>
+                                <span id="chatStatusText">Ready</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message bot-message">
+                            <div class="message-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="message-content">
+                                <div class="message-text">
+                                    Welcome to Vakeel.ai! I'm your AI legal assistant powered by advanced LLaMA2 technology. 
+                                    Upload a legal document to get started, or ask me any general legal question. 
+                                    All processing happens locally on your machine for complete privacy.
+                                </div>
+                                <div class="message-time">Just now</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input-area">
+                        <div class="document-selector-wrapper">
+                            <select id="documentSelector" class="document-selector">
+                                <option value="">All Documents & General Knowledge</option>
+                            </select>
+                        </div>
+                        <div class="input-wrapper">
+                            <div class="input-container">
+                                <input type="text" id="chatInput" placeholder="Ask about your legal document or any legal question...">
+                                <button id="sendButton" class="send-btn" disabled>
+                                    <i class="fas fa-paper-plane"></i>
+                                    <div class="send-ripple"></div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-bg">
+            <div class="footer-particles"></div>
+        </div>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="logo-wrapper">
+                        <div class="logo-icon">
+                            <i class="fas fa-balance-scale"></i>
+                            <div class="logo-glow"></div>
+                        </div>
+                        <div class="logo-text">
+                            <span class="brand-name">Vakeel.ai</span>
+                            <span class="brand-tagline">Legal AI Platform</span>
+                        </div>
+                    </div>
+                    <p class="footer-description">
+                        Next-generation legal document analysis platform powered by advanced AI technology. 
+                        Secure, private, and intelligent legal assistance.
+                    </p>
+                    <div class="tech-stack">
+                        <span class="tech-badge">LLaMA2</span>
+                        <span class="tech-badge">ChromaDB</span>
+                        <span class="tech-badge">RAG Pipeline</span>
+                        <span class="tech-badge">Local Processing</span>
+                    </div>
+                </div>
+                <div class="footer-info">
+                    <div class="footer-section">
+                        <h4>System Information</h4>
+                        <div class="system-info" id="systemInfo">
+                            <div class="info-item">
+                                <i class="fas fa-server"></i>
+                                <span>Status: <span id="systemHealthStatus">Checking...</span></span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-database"></i>
+                                <span>Documents: <span id="documentCount">0</span></span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-clock"></i>
+                                <span>Uptime: <span id="systemUptime">--:--:--</span></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Copyright & Contact</h4>
+                        <div class="copyright-info">
+                            <p>&copy; 2025 <strong>Nipun Choudhary</strong></p>
+                            <p>All rights reserved.</p>
+                            <div class="contact-info">
+                                <a href="mailto:nipunchoudhary44@gmail.com" class="contact-link">
+                                    <i class="fas fa-envelope"></i>
+                                    nipunchoudhary44@gmail.com
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner">
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+                <div class="spinner-ring"></div>
+            </div>
+            <h3 id="loadingTitle">Processing...</h3>
+            <p id="loadingDescription">Please wait while we process your request</p>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

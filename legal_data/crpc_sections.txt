@@ -1,0 +1,19 @@
+THE CODE OF CRIMINAL PROCEDURE, 1973
+
+CHAPTER I - PRELIMINARY
+Section 1. Short title, extent and commencement
+(1) This Act may be called the Code of Criminal Procedure, 1973.
+(2) It extends to the whole of India except the State of Jammu and Kashmir.
+
+Section 2. Definitions
+In this Code, unless the context otherwise requires,—
+(a) "bailable offence" means an offence which is shown as bailable in the First Schedule;
+(b) "cognizable offence" means an offence for which, and "cognizable case" means a case in which, a police officer may, in accordance with the First Schedule or under any other law for the time being in force, arrest without warrant;
+
+CHAPTER V - ARREST OF PERSONS
+Section 41. When police may arrest without warrant
+Any police officer may without an order from a Magistrate and without a warrant, arrest any person—
+(a) who has been concerned in any cognizable offence, or against whom a reasonable complaint has been made, or credible information has been received, or a reasonable suspicion exists, of his having been so concerned;
+
+Section 50. Person arrested to be informed of grounds of arrest
+Every police officer or other person arresting any person without warrant shall forthwith communicate to him the grounds on which such arrest is made.
