@@ -95,7 +95,7 @@ Whether you're a lawyer, law student, or researcher, Vakeel.ai delivers fast, ac
 ### Steps
 ```bash
 # Clone the repository
-git clone https://github.com/choudharynipun/vakeel.ai.git
+git clone https://github.com/Choudharynipun/vakeel.ai.git
 cd vakeel.ai
 
 # Install dependencies
@@ -127,6 +127,9 @@ Documents Loaded: X
 Uptime
 
 Model Parameters: 7B
+
+
+Processing Speed: 
 
 📬 Contact
 
