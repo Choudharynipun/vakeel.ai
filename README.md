@@ -29,10 +29,14 @@ Whether you're a lawyer, law student, or researcher, Vakeel.ai delivers fast, ac
 - **Vector search** for meaning-based legal queries.
 
 ### ⚖️ Pre-Loaded Legal Knowledge Base
-- Indian Constitution
-- Indian Penal Code (IPC)
-- Code of Criminal Procedure (CrPC)
-- Other critical legal datasets.
+- bharatiya-nagarik-suraksha-sanhita-2023
+- contract-act
+- cpc-bare-act
+- crpc-bare-act-1973
+- dissolution-of-muslim-marriage-act
+- hindu-adoption-and-maintenance-act
+- negotiable-instruments-act-1881
+- the-bharatiya-sakshya-adhiniyam-2023
 
 ### 🔍 Semantic Search
 - Finds relevant legal precedents, clauses, and sections **based on meaning, not just keywords**.
@@ -71,7 +75,6 @@ Whether you're a lawyer, law student, or researcher, Vakeel.ai delivers fast, ac
 | **OCR Engine**        | Tesseract / PaddleOCR |
 | **Backend**           | Python (PyTorch, Transformers) |
 | **Frontend**          | Web-based UI |
-| **Deployment**        | Local execution / Docker-ready |
 
 ---
 
@@ -79,12 +82,6 @@ Whether you're a lawyer, law student, or researcher, Vakeel.ai delivers fast, ac
 
 > Your documents never leave your machine.  
 > Vakeel.ai is designed from the ground up for complete privacy and confidentiality.
-
----
-
-## 📷 Screenshots
-
-*(Add screenshots of your UI here for maximum visual impact)*
 
 ---
 
@@ -98,8 +95,8 @@ Whether you're a lawyer, law student, or researcher, Vakeel.ai delivers fast, ac
 ### Steps
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/vakeel-ai.git
-cd vakeel-ai
+git clone https://github.com/choudharynipun/vakeel.ai.git
+cd vakeel.ai
 
 # Install dependencies
 pip install -r requirements.txt
@@ -130,8 +127,6 @@ Documents Loaded: X
 Uptime
 
 Model Parameters: 7B
-
-Processing Speed: Sub-2s
 
 📬 Contact
 
