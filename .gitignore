@@ -16,4 +16,3 @@ temp/
 build/
 dist/
 *.egg-info/
-legal_data/
