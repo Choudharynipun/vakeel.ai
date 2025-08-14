@@ -2,6 +2,10 @@ import os
 import logging
 from typing import List, Dict, Any
 import json
+import PyPDF2
+import fitz  # PyMuPDF - better PDF extraction
+from pathlib import Path
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -17,85 +21,267 @@ class LegalKnowledgeBase:
         os.makedirs(self.data_dir, exist_ok=True)
     
     def load_legal_documents(self):
-        """Load all legal documents from the data directory"""
+        """Load all legal documents from the data directory (both PDF and text files)"""
         try:
             logger.info("Loading legal knowledge base documents...")
             
-            # Define legal documents to load
-            legal_files = [
-                {
-                    "filename": "indian_constitution.txt",
-                    "title": "Constitution of India",
-                    "category": "constitutional_law",
-                    "source": "Government of India"
-                },
-                {
-                    "filename": "indian_penal_code.txt",
-                    "title": "Indian Penal Code, 1860",
-                    "category": "criminal_law",
-                    "source": "Legislative Department"
-                },
-                {
-                    "filename": "crpc_sections.txt",
-                    "title": "Code of Criminal Procedure, 1973",
-                    "category": "procedural_law",
-                    "source": "Legislative Department"
-                },
-                {
-                    "filename": "civil_procedure_code.txt",
-                    "title": "Code of Civil Procedure, 1908",
-                    "category": "civil_law",
-                    "source": "Legislative Department"
-                },
-                {
-                    "filename": "evidence_act.txt",
-                    "title": "Indian Evidence Act, 1872",
-                    "category": "evidence_law",
-                    "source": "Legislative Department"
-                },
-                {
-                    "filename": "contract_act.txt",
-                    "title": "Indian Contract Act, 1872",
-                    "category": "contract_law",
-                    "source": "Legislative Department"
-                }
-            ]
+            # First load PDF files
+            self._load_pdf_files()
             
-            loaded_count = 0
-            
-            for file_info in legal_files:
-                file_path = os.path.join(self.data_dir, file_info["filename"])
-                
-                if os.path.exists(file_path):
-                    content = self._load_text_file(file_path)
-                    if content:
-                        document = {
-                            "id": f"legal_{file_info['filename'].replace('.txt', '')}",
-                            "title": file_info["title"],
-                            "content": content,
-                            "category": file_info["category"],
-                            "source": file_info["source"],
-                            "filename": file_info["filename"]
-                        }
-                        
-                        self.documents.append(document)
-                        self.document_index[document["id"]] = document
-                        loaded_count += 1
-                        
-                        logger.info(f"Loaded: {file_info['title']}")
-                else:
-                    # Create sample content if file doesn't exist
-                    self._create_sample_legal_document(file_path, file_info)
-                    logger.warning(f"Created sample file: {file_info['filename']}")
-            
-            # Load any additional text files in the directory
-            self._load_additional_files()
+            # Then load any existing text files (for backward compatibility)
+            self._load_text_files()
             
             logger.info(f"Legal knowledge base loaded with {len(self.documents)} documents")
             
         except Exception as e:
             logger.error(f"Failed to load legal documents: {str(e)}")
             raise
+    
+    def _load_pdf_files(self):
+        """Load and process all PDF files from the legal_data directory"""
+        try:
+            pdf_files = [f for f in os.listdir(self.data_dir) if f.lower().endswith('.pdf')]
+            
+            logger.info(f"Found {len(pdf_files)} PDF files to process")
+            
+            for pdf_file in pdf_files:
+                file_path = os.path.join(self.data_dir, pdf_file)
+                logger.info(f"Processing PDF: {pdf_file}")
+                
+                # Extract text from PDF
+                content = self._extract_text_from_pdf(file_path)
+                
+                if content and len(content.strip()) > 100:  # Minimum content check
+                    # Create document metadata
+                    doc_info = self._get_pdf_metadata(pdf_file)
+                    
+                    document = {
+                        "id": f"pdf_{pdf_file.replace('.pdf', '').replace('-', '_').replace(' ', '_').lower()}",
+                        "title": doc_info["title"],
+                        "content": content,
+                        "category": doc_info["category"],
+                        "source": doc_info["source"],
+                        "filename": pdf_file,
+                        "file_type": "pdf",
+                        "content_length": len(content)
+                    }
+                    
+                    self.documents.append(document)
+                    self.document_index[document["id"]] = document
+                    
+                    logger.info(f"Successfully loaded: {doc_info['title']} ({len(content)} characters)")
+                else:
+                    logger.warning(f"Failed to extract sufficient content from: {pdf_file}")
+                    
+        except Exception as e:
+            logger.error(f"Failed to load PDF files: {str(e)}")
+    
+    def _extract_text_from_pdf(self, file_path: str) -> str:
+        """Extract text from PDF using multiple methods for best results"""
+        content = ""
+        
+        try:
+            # Method 1: Try PyMuPDF (fitz) first - usually better for complex PDFs
+            try:
+                doc = fitz.open(file_path)
+                for page_num in range(len(doc)):
+                    page = doc.load_page(page_num)
+                    page_text = page.get_text()
+                    if page_text.strip():
+                        content += f"\n--- Page {page_num + 1} ---\n{page_text}"
+                doc.close()
+                
+                if content.strip():
+                    logger.info(f"Extracted text using PyMuPDF from {os.path.basename(file_path)}")
+                    return self._clean_extracted_text(content)
+            except Exception as e:
+                logger.warning(f"PyMuPDF extraction failed for {file_path}: {str(e)}")
+            
+            # Method 2: Fallback to PyPDF2
+            try:
+                with open(file_path, 'rb') as file:
+                    pdf_reader = PyPDF2.PdfReader(file)
+                    content = ""
+                    
+                    for page_num in range(len(pdf_reader.pages)):
+                        page = pdf_reader.pages[page_num]
+                        page_text = page.extract_text()
+                        if page_text.strip():
+                            content += f"\n--- Page {page_num + 1} ---\n{page_text}"
+                
+                if content.strip():
+                    logger.info(f"Extracted text using PyPDF2 from {os.path.basename(file_path)}")
+                    return self._clean_extracted_text(content)
+            except Exception as e:
+                logger.warning(f"PyPDF2 extraction failed for {file_path}: {str(e)}")
+                
+        except Exception as e:
+            logger.error(f"All PDF extraction methods failed for {file_path}: {str(e)}")
+        
+        return content.strip()
+    
+    def _clean_extracted_text(self, text: str) -> str:
+        """Clean and normalize extracted PDF text"""
+        if not text:
+            return ""
+        
+        # Remove excessive whitespace
+        text = re.sub(r'\s+', ' ', text)
+        
+        # Fix common PDF extraction issues
+        text = text.replace('', '')  # Remove null bytes
+        text = re.sub(r'(\w)-\s*\n\s*(\w)', r'\1\2', text)  # Fix hyphenated words across lines
+        
+        # Normalize line breaks
+        text = re.sub(r'\n\s*\n\s*\n+', '\n\n', text)
+        
+        # Remove page headers/footers patterns (customize as needed)
+        text = re.sub(r'Page \d+.*?\n', '', text, flags=re.IGNORECASE)
+        
+        return text.strip()
+    
+    def _get_pdf_metadata(self, filename: str) -> Dict[str, str]:
+        """Get metadata for PDF files based on filename"""
+        filename_lower = filename.lower()
+        
+        # Define metadata mappings based on your uploaded files
+        metadata_map = {
+            "muslim-women-protection-of-rights-on-divorce-act-1986": {
+                "title": "The Muslim Women (Protection of Rights on Divorce) Act, 1986",
+                "category": "family_law",
+                "source": "Government of India"
+            },
+            "muslim-marriages-registration-act-1981": {
+                "title": "Jammu and Kashmir Muslim Marriages Registration Act, 1981",
+                "category": "family_law",
+                "source": "Government of J&K"
+            },
+            "hindu-adoption-and-maintenance-act": {
+                "title": "The Hindu Adoptions and Maintenance Act, 1956",
+                "category": "family_law",
+                "source": "Government of India"
+            },
+            "sale-of-goods-act": {
+                "title": "The Sale of Goods Act, 1930",
+                "category": "commercial_law",
+                "source": "Government of India"
+            },
+            "the-hindu-succession-act1956": {
+                "title": "The Hindu Succession Act, 1956",
+                "category": "family_law",
+                "source": "Government of India"
+            },
+            "limitation-act": {
+                "title": "The Limitation Act, 1963",
+                "category": "procedural_law",
+                "source": "Government of India"
+            },
+            "tpa": {
+                "title": "The Transfer of Property Act, 1882",
+                "category": "property_law",
+                "source": "Government of India"
+            },
+            "dissolution-of-muslim-marriage-act": {
+                "title": "The Dissolution of Muslim Marriages Act, 1939",
+                "category": "family_law",
+                "source": "Government of India"
+            },
+            "evidence-act": {
+                "title": "The Indian Evidence Act, 1872",
+                "category": "evidence_law",
+                "source": "Government of India"
+            },
+            "hindu-marriage-act": {
+                "title": "The Hindu Marriage Act, 1955",
+                "category": "family_law",
+                "source": "Government of India"
+            },
+            "negotiable-instruments-act-1881": {
+                "title": "The Negotiable Instruments Act, 1881",
+                "category": "commercial_law",
+                "source": "Government of India"
+            },
+            "contract-act": {
+                "title": "The Indian Contract Act, 1872",
+                "category": "contract_law",
+                "source": "Government of India"
+            },
+            "the-bharatiya-sakshya-adhiniyam-2023": {
+                "title": "The Bharatiya Sakshya Adhiniyam, 2023",
+                "category": "evidence_law",
+                "source": "Government of India"
+            },
+            "ipc-bare-act": {
+                "title": "The Indian Penal Code, 1860",
+                "category": "criminal_law",
+                "source": "Government of India"
+            },
+            "the-bharatiya-nyaya-sanhita-2023": {
+                "title": "The Bharatiya Nyaya Sanhita, 2023",
+                "category": "criminal_law",
+                "source": "Government of India"
+            },
+            "crpc-bare-act-1973": {
+                "title": "The Code of Criminal Procedure, 1973",
+                "category": "procedural_law",
+                "source": "Government of India"
+            },
+            "bharatiya-nagarik-suraksha-sanhita-2023": {
+                "title": "The Bharatiya Nagarik Suraksha Sanhita, 2023",
+                "category": "procedural_law",
+                "source": "Government of India"
+            },
+            "cpc-bare-act": {
+                "title": "The Code of Civil Procedure, 1908",
+                "category": "civil_law",
+                "source": "Government of India"
+            }
+        }
+        
+        # Try to match filename with metadata
+        for key, metadata in metadata_map.items():
+            if key in filename_lower:
+                return metadata
+        
+        # Default metadata if no match found
+        clean_name = filename.replace('.pdf', '').replace('-', ' ').replace('_', ' ').title()
+        return {
+            "title": clean_name,
+            "category": "general_law",
+            "source": "Legal Document"
+        }
+    
+    def _load_text_files(self):
+        """Load existing text files for backward compatibility"""
+        try:
+            text_files = [f for f in os.listdir(self.data_dir) if f.lower().endswith('.txt')]
+            
+            for txt_file in text_files:
+                file_path = os.path.join(self.data_dir, txt_file)
+                content = self._load_text_file(file_path)
+                
+                if content:
+                    # Avoid duplicates - check if we already have this content from PDF
+                    doc_id = f"txt_{txt_file.replace('.txt', '').replace('-', '_').replace(' ', '_').lower()}"
+                    
+                    if doc_id not in self.document_index:
+                        document = {
+                            "id": doc_id,
+                            "title": txt_file.replace('_', ' ').replace('.txt', '').title(),
+                            "content": content,
+                            "category": "additional_text",
+                            "source": "Local Text File",
+                            "filename": txt_file,
+                            "file_type": "text",
+                            "content_length": len(content)
+                        }
+                        
+                        self.documents.append(document)
+                        self.document_index[document["id"]] = document
+                        logger.info(f"Loaded text file: {txt_file}")
+                        
+        except Exception as e:
+            logger.error(f"Failed to load text files: {str(e)}")
     
     def _load_text_file(self, file_path: str) -> str:
         """Load content from a text file"""
@@ -113,161 +299,6 @@ class LegalKnowledgeBase:
         except Exception as e:
             logger.error(f"Failed to load file {file_path}: {str(e)}")
             return None
-    
-    def _create_sample_legal_document(self, file_path: str, file_info: Dict):
-        """Create sample legal document content"""
-        sample_content = self._get_sample_content(file_info["filename"])
-        
-        try:
-            with open(file_path, 'w', encoding='utf-8') as f:
-                f.write(sample_content)
-        except Exception as e:
-            logger.error(f"Failed to create sample file {file_path}: {str(e)}")
-    
-    def _get_sample_content(self, filename: str) -> str:
-        """Generate sample content for legal documents"""
-        samples = {
-            "indian_constitution.txt": """CONSTITUTION OF INDIA
-
-PREAMBLE
-WE, THE PEOPLE OF INDIA, having solemnly resolved to constitute India into a SOVEREIGN SOCIALIST SECULAR DEMOCRATIC REPUBLIC and to secure to all its citizens:
-
-JUSTICE, social, economic and political;
-LIBERTY of thought, expression, belief, faith and worship;
-EQUALITY of status and of opportunity;
-and to promote among them all
-FRATERNITY assuring the dignity of the individual and the unity and integrity of the Nation;
-
-IN OUR CONSTITUENT ASSEMBLY this twenty-sixth day of November, 1949, do HEREBY ADOPT, ENACT AND GIVE TO OURSELVES THIS CONSTITUTION.
-
-PART I - THE UNION AND ITS TERRITORY
-Article 1. Name and territory of the Union
-(1) India, that is Bharat, shall be a Union of States.
-(2) The States and the territories thereof shall be as specified in the First Schedule.
-
-Article 2. Admission or establishment of new States
-Parliament may by law admit into the Union, or establish, new States on such terms and conditions as it thinks fit.
-
-PART III - FUNDAMENTAL RIGHTS
-Article 14. Equality before law
-The State shall not deny to any person equality before the law or the equal protection of the laws within the territory of India.
-
-Article 19. Protection of certain rights regarding freedom of speech, etc.
-(1) All citizens shall have the right—
-(a) to freedom of speech and expression;
-(b) to assemble peaceably and without arms;
-(c) to form associations or unions;
-
-Article 21. Protection of life and personal liberty
-No person shall be deprived of his life or personal liberty except according to procedure established by law.""",
-
-            "indian_penal_code.txt": """THE INDIAN PENAL CODE, 1860
-
-CHAPTER I - INTRODUCTION
-Section 1. Title and extent of operation of the Code
-This Act shall be called the Indian Penal Code, and shall take effect throughout India.
-
-Section 2. Punishment of offences committed within India
-Every person shall be liable to punishment under this Code and not otherwise for every act or omission contrary to the provisions thereof, of which he shall be guilty within India.
-
-CHAPTER II - GENERAL EXPLANATIONS
-Section 6. Definitions in the Code to be understood subject to exceptions
-Throughout this Code every definition of an offence, every penal provision, and every illustration of every such definition or penal provision, shall be understood subject to the general exceptions in Chapter IV.
-
-CHAPTER XVI - OF OFFENCES AFFECTING THE HUMAN BODY
-Section 299. Culpable homicide
-Whoever causes death by doing an act with the intention of causing death, or with the intention of causing such bodily injury as is likely to cause death, or with the knowledge that he is likely by such act to cause death, commits the offence of culpable homicide.
-
-Section 300. Murder
-Except in the cases hereinafter excepted, culpable homicide is murder, if the act by which the death is caused is done with the intention of causing death.""",
-
-            "crpc_sections.txt": """THE CODE OF CRIMINAL PROCEDURE, 1973
-
-CHAPTER I - PRELIMINARY
-Section 1. Short title, extent and commencement
-(1) This Act may be called the Code of Criminal Procedure, 1973.
-(2) It extends to the whole of India except the State of Jammu and Kashmir.
-
-Section 2. Definitions
-In this Code, unless the context otherwise requires,—
-(a) "bailable offence" means an offence which is shown as bailable in the First Schedule;
-(b) "cognizable offence" means an offence for which, and "cognizable case" means a case in which, a police officer may, in accordance with the First Schedule or under any other law for the time being in force, arrest without warrant;
-
-CHAPTER V - ARREST OF PERSONS
-Section 41. When police may arrest without warrant
-Any police officer may without an order from a Magistrate and without a warrant, arrest any person—
-(a) who has been concerned in any cognizable offence, or against whom a reasonable complaint has been made, or credible information has been received, or a reasonable suspicion exists, of his having been so concerned;
-
-Section 50. Person arrested to be informed of grounds of arrest
-Every police officer or other person arresting any person without warrant shall forthwith communicate to him the grounds on which such arrest is made.""",
-
-            "civil_procedure_code.txt": """THE CODE OF CIVIL PROCEDURE, 1908
-
-ORDER I - PARTIES TO SUITS
-Rule 1. Who may be joined as plaintiffs
-All persons may be joined in one suit as plaintiffs in whom any right to relief in respect of, or arising out of, the same act or transaction or series of acts or transactions is alleged to exist, whether jointly, severally or in the alternative.
-
-Rule 10. Suit in name of wrong plaintiff
-(1) Where a suit has been instituted in the name of the wrong person as plaintiff, or where it is doubtful whether it has been instituted in the name of the right plaintiff, the Court may at any stage of the proceedings allow the right person to be substituted or added as plaintiff upon such terms as the Court thinks just.
-
-ORDER VI - PLEADINGS GENERALLY
-Rule 2. Pleadings to state material facts
-Every pleading shall contain, and contain only, a statement in a concise form of the material facts on which the party pleading relies for his claim or defence, as the case may be, but not the evidence by which they are to be proved.""",
-
-            "evidence_act.txt": """THE INDIAN EVIDENCE ACT, 1872
-
-CHAPTER I - PRELIMINARY
-Section 1. Short title, extent and commencement
-This Act may be called the Indian Evidence Act, 1872. It extends to the whole of India except the State of Jammu and Kashmir and applies to all judicial proceedings in or before any Court, including Courts-martial, other than Courts-martial convened under the Army Act, the Naval Discipline Act or the Air Force Act.
-
-Section 3. Interpretation clause
-In this Act the following words and expressions are used in the following senses, unless a contrary intention appears from the context:—
-"Court" includes all Judges and Magistrates, and all persons, except arbitrators, legally authorised to take evidence.
-
-CHAPTER II - ON RELEVANCY OF FACTS
-Section 5. Evidence may be given of facts in issue and relevant facts
-Evidence may be given in any suit or proceeding of the existence or non-existence of every fact in issue and of such other facts as are hereinafter declared to be relevant, and of no others.""",
-
-            "contract_act.txt": """THE INDIAN CONTRACT ACT, 1872
-
-CHAPTER I - PRELIMINARY
-Section 1. Short title
-This Act may be called the Indian Contract Act, 1872.
-
-Section 2. Interpretation clause
-In this Act the following words and expressions are used in the following senses, unless a contrary intention appears from the context:—
-(a) When one person signifies to another his willingness to do or to abstain from doing anything, with a view to obtaining the assent of that other to such act or abstinence, he is said to make a proposal.
-(b) When the person to whom the proposal is made signifies his assent thereto, the proposal is said to be accepted.
-
-Section 10. What agreements are contracts
-All agreements are contracts if they are made by the free consent of parties competent to contract, for a lawful consideration and with a lawful object, and are not hereby expressly declared to be void."""
-        }
-        
-        return samples.get(filename, f"Sample content for {filename}\n\nThis is a placeholder legal document.")
-    
-    def _load_additional_files(self):
-        """Load any additional text files from the data directory"""
-        try:
-            for filename in os.listdir(self.data_dir):
-                if filename.endswith('.txt') and filename not in [doc['filename'] for doc in self.documents]:
-                    file_path = os.path.join(self.data_dir, filename)
-                    content = self._load_text_file(file_path)
-                    
-                    if content:
-                        document = {
-                            "id": f"additional_{filename.replace('.txt', '')}",
-                            "title": filename.replace('_', ' ').replace('.txt', '').title(),
-                            "content": content,
-                            "category": "additional",
-                            "source": "Local File",
-                            "filename": filename
-                        }
-                        
-                        self.documents.append(document)
-                        self.document_index[document["id"]] = document
-                        
-        except Exception as e:
-            logger.error(f"Failed to load additional files: {str(e)}")
     
     def get_all_documents(self) -> List[Dict[str, Any]]:
         """Get all loaded documents"""
@@ -308,6 +339,30 @@ All agreements are contracts if they are made by the free consent of parties com
             counts[category] = counts.get(category, 0) + 1
         return counts
     
+    def get_documents_by_category(self, category: str) -> List[Dict[str, Any]]:
+        """Get all documents in a specific category"""
+        return [doc for doc in self.documents if doc["category"] == category]
+    
+    def get_document_stats(self) -> Dict[str, Any]:
+        """Get statistics about the loaded documents"""
+        total_docs = len(self.documents)
+        total_content_length = sum(doc["content_length"] for doc in self.documents)
+        
+        # File type breakdown
+        file_types = {}
+        for doc in self.documents:
+            file_type = doc.get("file_type", "unknown")
+            file_types[file_type] = file_types.get(file_type, 0) + 1
+        
+        return {
+            "total_documents": total_docs,
+            "total_content_length": total_content_length,
+            "average_content_length": total_content_length // total_docs if total_docs > 0 else 0,
+            "categories": self.get_document_count(),
+            "file_types": file_types,
+            "category_list": self.get_categories()
+        }
+    
     def export_knowledge_base(self, output_file: str):
         """Export knowledge base to JSON file"""
         try:
@@ -316,7 +371,8 @@ All agreements are contracts if they are made by the free consent of parties com
                 "metadata": {
                     "total_documents": len(self.documents),
                     "categories": self.get_categories(),
-                    "document_counts": self.get_document_count()
+                    "document_counts": self.get_document_count(),
+                    "statistics": self.get_document_stats()
                 }
             }
             
@@ -328,3 +384,30 @@ All agreements are contracts if they are made by the free consent of parties com
         except Exception as e:
             logger.error(f"Failed to export knowledge base: {str(e)}")
             raise
+    
+    def create_document_summary(self) -> str:
+        """Create a summary of all loaded documents"""
+        stats = self.get_document_stats()
+        summary = f"""
+Legal Knowledge Base Summary:
+============================
+
+Total Documents: {stats['total_documents']}
+Total Content: {stats['total_content_length']:,} characters
+Average Document Length: {stats['average_content_length']:,} characters
+
+Categories:
+-----------
+"""
+        for category, count in sorted(stats['categories'].items()):
+            summary += f"• {category.replace('_', ' ').title()}: {count} documents\n"
+        
+        summary += f"\nFile Types:\n-----------\n"
+        for file_type, count in sorted(stats['file_types'].items()):
+            summary += f"• {file_type.upper()}: {count} files\n"
+        
+        summary += f"\nDocument List:\n--------------\n"
+        for doc in sorted(self.documents, key=lambda x: x['category']):
+            summary += f"• {doc['title']} ({doc['category']})\n"
+        
+        return summary
